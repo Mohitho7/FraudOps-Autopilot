@@ -16,11 +16,24 @@ import pytest
 from pydantic import ValidationError
 
 import app.agents.tools as tools_package
-from app.agents.behavioral.analyzer import BehavioralAnalyzerStub
-from app.agents.business.analyzer import BusinessContextAnalyzerStub
+from app.agents.behavioral.analyzer import (
+    BehavioralAnalysisRequest,
+    BehavioralAnalyzer,
+    BehavioralAnalyzerStub,
+)
+from app.agents.business.analyzer import (
+    BusinessContextAnalysisRequest,
+    BusinessContextAnalyzer,
+    BusinessContextAnalyzerStub,
+)
+from app.agents.graph.state import InvestigationState
 from app.agents.evidence.builder import EvidenceBuilderStub
 from app.agents.recommendation.agent import RecommendationAgentStub
-from app.agents.relationship.analyzer import RelatedEntitiesAnalyzerStub
+from app.agents.relationship.analyzer import (
+    RelatedEntitiesAnalyzer,
+    RelatedEntitiesAnalyzerStub,
+    RelationshipAnalysisRequest,
+)
 from app.agents.tools import (
     CustomerHistoryTool,
     CustomerHistoryToolStub,
@@ -43,6 +56,7 @@ from app.agents.tools.types import (
     AmountStatistics,
     CustomerHistory,
     MerchantContext,
+    MerchantObservedStatistics,
     OperatingHours,
     PriorCasesResult,
     RecentTransactionSet,
@@ -52,7 +66,13 @@ from app.agents.tools.types import (
 )
 from app.schemas.investigation import RelationType, Severity
 from app.schemas.investigation_result import RelatedEntity
-from tests.conftest import CUSTOMER_ID, MERCHANT_ID, TRANSACTION_ID, make_rule_result
+from tests.conftest import (
+    CUSTOMER_ID,
+    MERCHANT_ID,
+    TRANSACTION_ID,
+    make_request,
+    make_rule_result,
+)
 
 WINDOW = TimeWindow(
     start=datetime(2026, 7, 1, tzinfo=timezone.utc),
@@ -160,6 +180,207 @@ def test_customer_history_carries_deterministic_baselines() -> None:
 
 def test_amount_statistics_report_a_missing_baseline() -> None:
     assert AmountStatistics(sample_size=0).has_baseline is False
+
+
+async def test_behavioral_analyzer_reports_customer_amount_anomalies() -> None:
+    state = InvestigationState.from_request(make_request())
+    request = BehavioralAnalysisRequest(
+        history=CustomerHistory(
+            customer_id=CUSTOMER_ID,
+            window=WINDOW,
+            context={
+                "customer_id": CUSTOMER_ID,
+                "amount_statistics": {
+                    "sample_size": 10,
+                    "median": "2300.00",
+                    "mean": "2280.00",
+                    "p95": "6500.00",
+                    "p99": "9000.00",
+                },
+                "transaction_count": 10,
+            },
+            transactions=[],
+            recent_review_outcomes=["CLEARED"],
+            reference=f"customer:{CUSTOMER_ID}:history",
+        ),
+        transaction_amount="1000000.00",
+        transaction_currency="INR",
+    )
+
+    outcome = await BehavioralAnalyzer().analyze(state, request)
+
+    assert outcome.sufficient_evidence is True
+    assert any("customer median" in finding.title.lower() for finding in outcome.findings)
+    assert any("customer p95" in finding.title.lower() for finding in outcome.findings)
+    assert state.behavioral_findings == outcome.findings
+
+
+async def test_behavioral_analyzer_handles_missing_history_safely() -> None:
+    state = InvestigationState.from_request(make_request())
+    history = CustomerHistory(
+        customer_id=CUSTOMER_ID,
+        window=WINDOW,
+        context={
+            "customer_id": CUSTOMER_ID,
+            "amount_statistics": {"sample_size": 0},
+            "transaction_count": 0,
+        },
+        transactions=[],
+        reference=f"customer:{CUSTOMER_ID}:history",
+    )
+    request = BehavioralAnalysisRequest(
+        history=history,
+        transaction_amount="1000000.00",
+        transaction_currency="INR",
+    )
+
+    outcome = await BehavioralAnalyzer().analyze(state, request)
+
+    assert outcome.findings == []
+    assert outcome.sufficient_evidence is False
+    assert any("missing" in limitation.lower() for limitation in outcome.limitations)
+    assert state.behavioral_findings == []
+
+
+async def test_behavioral_analyzer_is_deterministic() -> None:
+    state = InvestigationState.from_request(make_request())
+    request = BehavioralAnalysisRequest(
+        history=CustomerHistory(
+            customer_id=CUSTOMER_ID,
+            window=WINDOW,
+            context={
+                "customer_id": CUSTOMER_ID,
+                "amount_statistics": {
+                    "sample_size": 10,
+                    "median": "2300.00",
+                    "mean": "2280.00",
+                    "p95": "6500.00",
+                    "p99": "9000.00",
+                },
+                "transaction_count": 10,
+            },
+            transactions=[],
+            reference=f"customer:{CUSTOMER_ID}:history",
+        ),
+        transaction_amount="1000000.00",
+        transaction_currency="INR",
+    )
+
+    first = await BehavioralAnalyzer().analyze(state, request)
+    second = await BehavioralAnalyzer().analyze(InvestigationState.from_request(make_request()), request)
+
+    assert first == second
+    assert first.findings == second.findings
+
+
+async def test_business_context_analyzer_reports_merchant_threshold_anomalies() -> None:
+    state = InvestigationState.from_request(make_request())
+    request = BusinessContextAnalysisRequest(
+        merchant=MerchantContext(
+            merchant_id=MERCHANT_ID,
+            category="fuel_station",
+            expected_p95="6500",
+            expected_p99="12000",
+            daily_volume_baseline="1200",
+            operating_hours=OperatingHours(opens_at=time(22, 0), closes_at=time(2, 0)),
+            observed=MerchantObservedStatistics(
+                window=WINDOW,
+                transaction_count=12,
+                amount_statistics=AmountStatistics(
+                    sample_size=12,
+                    mean="2400.00",
+                    median="2200.00",
+                    p95="5000.00",
+                    p99="8000.00",
+                ),
+                average_daily_volume=Decimal("2100"),
+            ),
+            reference=f"merchant:{MERCHANT_ID}:profile",
+        ),
+        transaction_amount="1000000.00",
+        transaction_currency="INR",
+        transaction_local_time="23:30",
+    )
+
+    outcome = await BusinessContextAnalyzer().analyze(state, request)
+
+    assert outcome.sufficient_evidence is True
+    assert any("merchant expected p95" in finding.title.lower() for finding in outcome.findings)
+    assert any("merchant expected p99" in finding.title.lower() for finding in outcome.findings)
+    assert state.business_findings == []
+
+
+async def test_business_context_analyzer_handles_missing_merchant_data() -> None:
+    state = InvestigationState.from_request(make_request())
+    request = BusinessContextAnalysisRequest(
+        merchant=MerchantContext(
+            merchant_id=MERCHANT_ID,
+            category="fuel_station",
+            reference=f"merchant:{MERCHANT_ID}:profile",
+        ),
+        transaction_amount="1000000.00",
+        transaction_currency="INR",
+        transaction_local_time="23:30",
+    )
+
+    outcome = await BusinessContextAnalyzer().analyze(state, request)
+
+    assert outcome.findings == []
+    assert outcome.sufficient_evidence is False
+    assert any("merchant" in limitation.lower() for limitation in outcome.limitations)
+    assert state.business_findings == []
+
+
+async def test_relationship_analyzer_reports_direct_links() -> None:
+    state = InvestigationState.from_request(make_request())
+    request = RelationshipAnalysisRequest(
+        related_entities=[
+            RelatedEntity(
+                entity_type="DEVICE",
+                entity_ref="device:abc-123",
+                relation_type=RelationType.SHARED_DEVICE,
+                risk_note="shared device",
+            ),
+            RelatedEntity(
+                entity_type="DEVICE",
+                entity_ref="device:def-456",
+                relation_type=RelationType.SHARED_DEVICE,
+            ),
+            RelatedEntity(
+                entity_type="IP_ADDRESS",
+                entity_ref="ip:203.0.113.10",
+                relation_type=RelationType.SHARED_IP_ADDRESS,
+            ),
+            RelatedEntity(
+                entity_type="MERCHANT",
+                entity_ref=f"merchant:{MERCHANT_ID}",
+                relation_type=RelationType.SHARED_MERCHANT,
+                related_case_id=TRANSACTION_ID,
+            ),
+        ],
+        linked_transaction_count=3,
+        shared_entity_count=4,
+    )
+
+    outcome = await RelatedEntitiesAnalyzer().analyze(state, request)
+
+    assert outcome.sufficient_evidence is True
+    assert any("shared-device" in finding.title.lower() for finding in outcome.findings)
+    assert any("shared ip" in finding.title.lower() for finding in outcome.findings)
+    assert any("related case" in finding.title.lower() for finding in outcome.findings)
+    assert state.relationship_findings == []
+
+
+async def test_relationship_analyzer_handles_empty_links() -> None:
+    state = InvestigationState.from_request(make_request())
+    request = RelationshipAnalysisRequest(related_entities=[])
+
+    outcome = await RelatedEntitiesAnalyzer().analyze(state, request)
+
+    assert outcome.findings == []
+    assert outcome.sufficient_evidence is False
+    assert any("no related" in limitation.lower() for limitation in outcome.limitations)
+    assert state.relationship_findings == []
 
 
 def test_operating_hours_cover_overnight_windows() -> None:
