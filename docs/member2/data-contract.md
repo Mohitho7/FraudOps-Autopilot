@@ -56,7 +56,7 @@ the naming and type conventions of the existing design:
 | `trigger` | `VARCHAR(20)` | `RISK_THRESHOLD`/`REVIEWER_REQUEST` |
 | `current_step` | `VARCHAR(40)` | resume point |
 | `completed_steps` | `JSONB` | array of step names |
-| `state_json` | `JSONB` | full `InvestigationState.to_dict()` checkpoint |
+| `state_json` | `JSONB` | full `InvestigationState.to_dict()` checkpoint (round-trips through `from_dict()`) |
 | `schema_version` | `VARCHAR(10)` | currently `"1.0"`; guards checkpoint compatibility |
 | `retry_count` | `INT` | bounded retry accounting |
 | `started_at` | `TIMESTAMPTZ` | |

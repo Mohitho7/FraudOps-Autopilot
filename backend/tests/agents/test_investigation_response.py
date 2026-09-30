@@ -227,3 +227,50 @@ def test_response_serialises_to_json() -> None:
     assert payload["recommendation"]["action"] == "ESCALATE"
     assert payload["severity"] == "CRITICAL"
     assert payload["requires_human_review"] is True
+
+
+def test_response_round_trips_through_a_stored_payload() -> None:
+    """A serialised response must be readable again (Member 4 storage path)."""
+
+    state = InvestigationState.from_request(make_request())
+    state.evidence = [
+        EvidenceItem(
+            evidence_id=uuid4(),
+            source_type=EvidenceSourceType.RULE_RESULT,
+            source_ref="rule_result:unusual_amount",
+            claim_kind=ClaimKind.RULE_RESULT,
+            title="Unusual amount rule triggered",
+            details={"amount": "1000000.00"},
+        )
+    ]
+    response = state.to_response()
+
+    payload = response.model_dump(mode="json")
+    restored = InvestigationResponse.model_validate(payload)
+
+    assert restored == response
+    assert restored.evidence[0].reference == response.evidence[0].reference
+
+
+def test_computed_fields_on_input_never_override_derived_values() -> None:
+    """A persisted payload must not be able to forge the handoff policy."""
+
+    # The payload below is WAITING_HUMAN, so the derived value must be True even
+    # though the stored payload claims False.
+    response = InvestigationResponse.model_validate(
+        {**_response_payload(), "requires_human_review": False}
+    )
+
+    assert response.requires_human_review is True
+
+    with pytest.raises(ValidationError):
+        EvidenceItem.model_validate(
+            {
+                **_response_payload(),
+                "source_type": EvidenceSourceType.TRANSACTION,
+                "source_ref": "transaction:1",
+                "claim_kind": ClaimKind.OBSERVED_FACT,
+                "title": "Amount anomaly",
+                "unknown_field": "should be rejected",
+            }
+        )

@@ -29,7 +29,7 @@ from enum import StrEnum
 from typing import Any
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field
+from pydantic import BaseModel, ConfigDict, Field, computed_field, model_validator
 
 from app.schemas.investigation import (
     AnalysisCategory,
@@ -124,6 +124,22 @@ class EvidenceItem(BaseModel):
         """Evidence reference used by findings and recommendations."""
 
         return f"evidence:{self.evidence_id}"
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_computed_reference(cls, data: object) -> object:
+        """Ignore ``reference`` when it comes from a serialised payload.
+
+        ``reference`` is a computed field, so Pydantic emits it in
+        ``model_dump`` but would otherwise reject it on validation. Dropping it
+        on input keeps ``model_dump``/``model_validate`` round-trippable for
+        Member 4's ``evidence`` table and for LangGraph checkpoints, while
+        ``extra="forbid"`` still rejects genuinely unknown keys.
+        """
+
+        if isinstance(data, dict):
+            data.pop("reference", None)
+        return data
 
 
 class InvestigationFinding(BaseModel):
@@ -323,8 +339,18 @@ class InvestigationError(BaseModel):
 class InvestigationResponse(BaseModel):
     """Full investigation payload consumed by the reviewer console.
 
-    The console renders this object; it must never derive risk or fraud logic
+The console renders this object; it must never derive risk or fraud logic
     locally (``Four-Member Work Division`` section 4, acceptance checks).
+
+    Computed fields
+    ---------------
+    ``EvidenceItem.reference`` and ``InvestigationResponse.requires_human_review``
+    are ``computed_field``s: Pydantic emits them in ``model_dump`` but does not
+    accept them as input. Both models therefore drop these keys in a ``before``
+    validator so that ``model_dump`` -> ``model_validate`` round-trips cleanly
+    (Member 4 storage, LangGraph checkpoints). Because they are always re-derived,
+    a value supplied by a stored payload is ignored rather than trusted.
+    ``extra="forbid"`` still rejects genuinely unknown keys.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -403,3 +429,18 @@ class InvestigationResponse(BaseModel):
         ):
             return True
         return self.status is InvestigationStatus.FAILED
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_computed_requires_human_review(cls, data: object) -> object:
+        """Ignore the computed ``requires_human_review`` key on input.
+
+        The field is always derived by the property above, so a value supplied
+        by a persisted payload or a checkpoint must never override it. Dropping
+        it keeps ``model_dump``/``model_validate`` round-trippable for Member 4's
+        stored response payload.
+        """
+
+        if isinstance(data, dict):
+            data.pop("requires_human_review", None)
+        return data

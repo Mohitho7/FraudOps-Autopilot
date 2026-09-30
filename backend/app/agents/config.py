@@ -19,12 +19,15 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import AliasChoices, Field, SecretStr
+from pydantic import AliasChoices, Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.schemas.investigation import Severity
 
 __all__ = ["InvestigationSettings", "get_investigation_settings"]
+
+DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
+"""Fallback model id. Confirm with the team; override via the env variable."""
 
 
 class InvestigationSettings(BaseSettings):
@@ -55,7 +58,7 @@ class InvestigationSettings(BaseSettings):
         ),
     )
     openai_model: str = Field(
-        default="gpt-4o-mini",
+        default=DEFAULT_OPENAI_MODEL,
         min_length=1,
         description=(
             "Model id used for narration, evidence synthesis and recommendation. "
@@ -95,6 +98,37 @@ class InvestigationSettings(BaseSettings):
             "until Member 4 provides the PostgreSQL checkpointer."
         ),
     )
+
+    @field_validator("openai_api_key", mode="before")
+    @classmethod
+    def _blank_key_is_absent(cls, value: object) -> object:
+        """Treat an empty or whitespace-only key as no key at all.
+
+        ``.env.example`` ships blank placeholders, and an unset shell variable
+        exported as an empty string must not count as LLM access. Without this,
+        ``llm_available`` would report True for a blank key and the
+        deterministic fallback required by ``Agent System Design`` section 16
+        would never engage.
+        """
+
+        if isinstance(value, SecretStr):
+            value = value.get_secret_value()
+        if isinstance(value, str) and not value.strip():
+            return None
+        return value
+
+    @field_validator("openai_model", mode="before")
+    @classmethod
+    def _blank_model_falls_back_to_default(cls, value: object) -> object:
+        """Treat a blank model id as unset so the default applies.
+
+        ``.env.example`` leaves the variable empty; an empty string would fail
+        the ``min_length=1`` constraint and abort startup.
+        """
+
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return DEFAULT_OPENAI_MODEL
+        return value
 
     @property
     def llm_available(self) -> bool:

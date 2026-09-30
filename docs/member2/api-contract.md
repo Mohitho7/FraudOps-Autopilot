@@ -150,6 +150,21 @@ not recompute risk, severity or fraud logic locally.
 | `started_at` / `updated_at` / `completed_at` | `datetime` | Lifecycle timestamps, tz-aware |
 | `requires_human_review` | `bool` (computed) | Derived so the console does not re-implement the handoff policy |
 
+### Computed fields and round-tripping
+
+`EvidenceItem.reference` and `InvestigationResponse.requires_human_review` are
+Pydantic computed fields: they are emitted by `model_dump()` but are not
+accepted as constructor input. Both models ignore these keys on input, so
+`model_dump()` → `model_validate()` round-trips cleanly. Consequences for
+consumers:
+
+* A payload may contain `reference` and `requires_human_review`; the values are
+  always re-derived server-side and any supplied value is discarded.
+* `extra="forbid"` still applies, so a genuinely unknown key is a validation
+  error.
+* Safe to cache the serialised response verbatim (Member 4 storage, member 3
+  client cache) and re-validate it later.
+
 ### Explainability contract
 
 Every evidence item and finding carries a `ClaimKind`:

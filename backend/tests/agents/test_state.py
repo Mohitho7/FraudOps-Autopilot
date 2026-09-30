@@ -18,9 +18,11 @@ from app.agents.graph.workflow import build_investigation_graph
 from app.schemas.investigation import (
     AnalysisCategory,
     ClaimKind,
+    EntityType,
     InvestigationStatus,
     InvestigationStep,
     InvestigationTrigger,
+    RelationType,
     Severity,
 )
 from app.schemas.investigation_result import (
@@ -29,6 +31,7 @@ from app.schemas.investigation_result import (
     InvestigationFinding,
     Recommendation,
     RecommendationAction,
+    RelatedEntity,
 )
 from tests.conftest import (
     CASE_ID,
@@ -156,6 +159,39 @@ def test_state_round_trips_through_a_checkpoint_dict() -> None:
 
     assert restored == state
     assert isinstance(restored.to_dict()["transaction_id"], str)
+
+
+def test_state_round_trips_after_evidence_has_been_collected() -> None:
+    """Checkpoint restore must work once the evidence builder has run.
+
+    Regression test: computed fields are emitted by ``model_dump`` but rejected
+    by validation, so a state carrying evidence could not be restored from its
+    own checkpoint dict (Agent System Design section 13).
+    """
+
+    state = InvestigationState.from_request(make_request())
+    state.evidence = [
+        EvidenceItem(
+            evidence_id=uuid4(),
+            source_type=EvidenceSourceType.RULE_RESULT,
+            source_ref="rule_result:unusual_amount",
+            claim_kind=ClaimKind.RULE_RESULT,
+            title="Unusual amount rule triggered",
+            details={"amount": "1000000.00", "customer_average": "2300.00"},
+        )
+    ]
+    state.related_entities = [
+        RelatedEntity(
+            entity_type=EntityType.DEVICE,
+            entity_ref="device-abc-123",
+            relation_type=RelationType.SHARED_DEVICE,
+        )
+    ]
+
+    restored = InvestigationState.from_dict(state.to_dict())
+
+    assert restored == state
+    assert restored.evidence[0].reference == state.evidence[0].reference
 
 
 def test_state_projects_the_member3_response() -> None:
