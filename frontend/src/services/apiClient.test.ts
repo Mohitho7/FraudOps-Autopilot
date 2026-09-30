@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiNotConfiguredError, apiClient } from './apiClient';
+import { ApiClientError, getUserFacingApiMessage } from '../types/api';
 
 const fetchMock = vi.fn();
 
@@ -21,5 +22,10 @@ describe('apiClient', () => {
     vi.stubGlobal('fetch', fetchMock);
 
     await expect(apiClient.get('http://backend.test/configured')).rejects.toMatchObject({ category: 'UNAUTHORIZED', status: 401 });
+  });
+
+  it('maps technical categories to reviewer-safe messages', () => {
+    expect(getUserFacingApiMessage(new ApiClientError('TIMEOUT', 'raw timeout'), 'fallback')).toContain('too long');
+    expect(getUserFacingApiMessage(new ApiClientError('SERVER_ERROR', 'raw server error'), 'fallback')).toContain('unexpected error');
   });
 });

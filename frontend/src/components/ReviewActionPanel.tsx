@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Check, XCircle, ShieldAlert } from 'lucide-react';
 import type { DecisionAction } from '../types/review';
 
@@ -17,6 +17,7 @@ const ReviewActionPanel: React.FC<ReviewActionPanelProps> = ({
 }) => {
   const [selectedDecision, setSelectedDecision] = useState<DecisionAction | null>(null);
   const [notes, setNotes] = useState('');
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
 
   const requestConfirmation = (decision: DecisionAction) => {
     setSelectedDecision(decision);
@@ -28,6 +29,16 @@ const ReviewActionPanel: React.FC<ReviewActionPanelProps> = ({
     setSelectedDecision(null);
     setNotes('');
   };
+
+  useEffect(() => {
+    if (!selectedDecision) return;
+    confirmButtonRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedDecision(null);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedDecision]);
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-5">
@@ -86,7 +97,7 @@ const ReviewActionPanel: React.FC<ReviewActionPanelProps> = ({
             <p className="mt-2 text-xs text-slate-500">This records the human reviewer outcome and updates the case.</p>
             <div className="mt-6 flex justify-end gap-3">
               <button type="button" onClick={() => setSelectedDecision(null)} className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-gray-50">Cancel</button>
-              <button type="button" onClick={confirmDecision} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover">Confirm decision</button>
+              <button ref={confirmButtonRef} type="button" onClick={confirmDecision} className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover">Confirm decision</button>
             </div>
           </div>
         </div>

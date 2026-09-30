@@ -68,8 +68,8 @@ async function request<T>(method: string, endpoint: string, body?: unknown, para
     return await response.json() as T;
   } catch (error) {
     if (error instanceof ApiClientError) throw error;
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ApiClientError('NETWORK_ERROR', 'The backend request timed out.');
+    if ((error instanceof DOMException && error.name === 'AbortError') || (error instanceof Error && error.name === 'AbortError')) {
+      throw new ApiClientError('TIMEOUT', 'The backend request timed out.');
     }
     throw new ApiClientError('NETWORK_ERROR', 'The backend could not be reached.');
   } finally {

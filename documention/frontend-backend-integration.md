@@ -41,7 +41,7 @@ The frontend displays backend-provided risk scores, recommendations, rule result
 
 ## Error Contract
 
-`frontend/src/types/api.ts` defines these categories: `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `SERVER_ERROR`, `NETWORK_ERROR`, `API_NOT_CONFIGURED`, and `UNKNOWN_ERROR`.
+`frontend/src/types/api.ts` defines these categories: `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `VALIDATION_ERROR`, `SERVER_ERROR`, `NETWORK_ERROR`, `TIMEOUT`, `API_NOT_CONFIGURED`, and `UNKNOWN_ERROR`.
 
 The API client rejects empty endpoints before making a request. Services choose mock data when their mapping is empty. Pages expose friendly error states and do not display raw stack traces.
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldAlert, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getUserFacingApiMessage } from '../types/api';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -32,13 +33,7 @@ const Login = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err) {
-      if (err instanceof TypeError && err.message === 'Failed to fetch') {
-        setError('Unable to connect to the server. Please try again.');
-      } else if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('An unexpected error occurred. Please try again.');
-      }
+      setError(getUserFacingApiMessage(err, err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -138,7 +133,6 @@ const Login = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-300 transition-colors"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

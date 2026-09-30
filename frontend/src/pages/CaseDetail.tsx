@@ -12,6 +12,7 @@ import RecommendationCard from '../components/RecommendationCard';
 import { useCase } from '../hooks/useCases';
 import { useRecommendation, useSubmitDecision } from '../hooks/useReview';
 import type { DecisionAction } from '../types/review';
+import { getUserFacingApiMessage } from '../types/api';
 import { 
   ArrowLeft,
   AlertTriangle,
@@ -298,7 +299,7 @@ const CaseDetail = () => {
           )}
           {submitDecision.isError && (
             <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-              {submitDecision.error.message === 'Case already reviewed' ? 'Case already reviewed.' : 'Unable to submit the decision. Please try again.'}
+              {submitDecision.error.message === 'Case already reviewed' ? 'Case already reviewed.' : getUserFacingApiMessage(submitDecision.error, 'Unable to submit the decision. Please try again.')}
             </div>
           )}
 
