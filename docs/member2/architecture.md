@@ -59,9 +59,11 @@ backend/
 │   │   ├── recommendation/agent.py
 │   │   ├── graph/
 │   │   │   ├── state.py             # InvestigationState
-│   │   │   ├── nodes.py             # node vocabulary + transition data
-│   │   │   └── workflow.py          # build_investigation_graph() — NotImplemented
-│   │   ├── tools/                   # approved tool protocols + stubs
+│   │   │   ├── nodes.py             # node vocabulary + Batch 2 nodes
+│   │   │   ├── checkpoint.py        # checkpointer seam (memory in Batch 2)
+│   │   │   ├── errors.py            # workflow / tool / checkpoint errors
+│   │   │   └── workflow.py          # build_investigation_graph()
+│   │   ├── tools/                   # approved tool protocols, stubs + fakes
 │   │   └── prompts/investigation.py # narration templates only
 │   ├── schemas/
 │   │   ├── investigation.py         # M1 -> M2 contract + shared enums
@@ -77,7 +79,11 @@ file names suggested there (`graph.py`, `history.py`, `business_context.py`,
 `relationships.py`, `evidence.py`) are grouped into packages so that the three
 capabilities, the state and the tools stay separable.
 
-## 4. Investigation flow (planned, not implemented)
+## 4. Investigation flow
+
+Batch 2 implements the context-loading slice of this flow. The analysis,
+evidence, recommendation and handoff stages are still planned; see
+`agent-workflow.md` for exactly what runs today.
 
 ```
 Member 1 risk engine
@@ -105,7 +111,10 @@ InvestigationState.to_response() → Member 3 console
 schema, and `to_dict()` / `from_dict()` give the plain-dict form needed for
 checkpoints and for Member 4's `investigations.state_json` column.
 
-## 5. Resume, retry and failure semantics (contract only)
+## 5. Resume, retry and failure semantics
+
+Implemented in Batch 2 against an in-memory checkpointer. Production persistence
+is Member 4's. See `agent-workflow.md` section 2.
 
 * `current_step` + `completed_steps` make each step idempotent, so a retried
   investigation does not repeat completed work.
@@ -128,11 +137,15 @@ checkpoints and for Member 4's `investigations.state_json` column.
 | Member 4 | → Member 2 | Read tools over `transactions`, `customers`, `merchants`, `rule_results`, `fraud_cases` | Requested, see `data-contract.md` |
 | Member 4 | Member 2 → | Persisted `investigations` / `evidence` / agent-step rows, LangGraph checkpointer | Requested, see `data-contract.md` |
 
-## 7. Batch 2 prerequisites
+## 7. Batch 2 status
 
-1. `langgraph` and `openai` added to `backend/requirements.txt`.
-2. Read tools implemented against Member 4's persistence layer.
-3. `build_investigation_graph()` implemented with the node set in
-   `app/agents/graph/nodes.py` and the edges in `app/agents/graph/workflow.py`.
-4. The three capabilities implemented against the deterministic tool output.
-5. A persistent `InvestigationService` replacing the in-memory stub.
+| Item | Status |
+| --- | --- |
+| `langgraph` in `requirements.txt` | Done. `openai` deliberately absent — no model is called. |
+| `build_investigation_graph()` | Done: 7 context-loading nodes on a real graph |
+| Checkpointing + resume | Done, **process-local only**; PostgreSQL is Member 4's |
+| `LangGraphInvestigationService` | Done, behind the unchanged Batch 1 boundary |
+| Read tools over Member 4's tables | Not done. `tools/fakes.py` covers the gap; see the open requests in `agent-workflow.md` section 5 |
+| The three analysis capabilities | Not started — later batch |
+| Evidence, recommendation, human handoff | Not started — later batch |
+| Durable persistence | Member 4 |

@@ -14,7 +14,7 @@ from pydantic import ValidationError
 
 from app.agents.graph.nodes import INVESTIGATION_NODE_SEQUENCE, NODE_DESCRIPTIONS
 from app.agents.graph.state import STATE_SCHEMA_VERSION, InvestigationState
-from app.agents.graph.workflow import build_investigation_graph
+from app.agents.graph.workflow import BATCH2_NODE_NAMES, build_investigation_graph
 from app.schemas.investigation import (
     AnalysisCategory,
     ClaimKind,
@@ -272,9 +272,13 @@ def test_node_vocabulary_matches_the_documented_workflow() -> None:
     assert set(NODE_DESCRIPTIONS) >= set(INVESTIGATION_NODE_SEQUENCE)
 
 
-def test_graph_compilation_is_not_implemented_in_batch1() -> None:
-    with pytest.raises(NotImplementedError):
-        build_investigation_graph(toolset=None, settings=None)  # type: ignore[arg-type]
+def test_graph_compiles_with_a_checkpointed_backend() -> None:
+    graph = build_investigation_graph(toolset=None, settings=None)  # type: ignore[arg-type]
+
+    assert graph.get_graph().nodes
+    assert set(BATCH2_NODE_NAMES) <= set(graph.get_graph().nodes)
+    assert "__end__" in graph.get_graph().nodes
+    assert getattr(graph, "checkpointer", None) is not None
 
 
 def test_default_timestamps_are_timezone_aware() -> None:

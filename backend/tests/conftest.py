@@ -1,18 +1,28 @@
 """Shared pytest fixtures for the backend test suite.
 
-The Batch 1 suite covers contracts only: schema validation, state creation,
-tool interfaces and the service boundary. No test asserts that AI
-investigation works -- that arrives with the Batch 2 implementation.
+Batch 1 covered contracts only: schema validation, state creation, tool
+interfaces and the service boundary. Batch 2 adds the orchestration layer --
+graph compilation, node execution, checkpoint/resume and error handling -- so
+these fixtures also provide the deterministic fake toolset and the environment
+gate it requires.
 """
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import datetime, timezone
 from decimal import Decimal
 from uuid import UUID
 
 import pytest
 
+from app.agents.tools.base import InvestigationToolError
+from app.agents.tools.fakes import (
+    ALLOW_FAKE_TOOLS_ENV,
+    FakeInvestigationToolset,
+    FakeMerchantProfileTool,
+    build_fake_toolset,
+)
 from app.schemas.investigation import (
     InvestigationRequest,
     RuleResultRecord,
@@ -92,3 +102,75 @@ def investigation_request() -> InvestigationRequest:
     """A valid investigation request for the documented demo scenario."""
 
     return make_request()
+
+
+@pytest.fixture(autouse=True)
+def fake_tools_enabled(monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
+    """Enable the deterministic fake read tools for every test.
+
+    Autouse so a test can never silently depend on the gate being off. The fake
+    tools themselves re-check the variable on every call, so the
+    ``fakes_disabled`` tests can still exercise the refusal path.
+    """
+
+    monkeypatch.setenv(ALLOW_FAKE_TOOLS_ENV, "true")
+    yield
+
+
+@pytest.fixture
+def fakes_disabled(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Turn the fake-tool gate off for tests that assert the refusal."""
+
+    monkeypatch.setenv(ALLOW_FAKE_TOOLS_ENV, "false")
+
+
+@pytest.fixture
+def fake_toolset() -> FakeInvestigationToolset:
+    """The deterministic fake toolset, matching the demo scenario ids."""
+
+    return build_fake_toolset()
+
+
+@pytest.fixture
+def failing_toolset() -> Iterator[FakeInvestigationToolset]:
+    """A fake toolset whose merchant lookup fails until the read layer recovers.
+
+    Used to prove that a node failure is recorded, that the investigation is
+    left in ``FAILED`` with a reviewer-safe error, and that resume reruns only
+    the unfinished work.
+
+    ``FakeInvestigationToolset`` is frozen, so the outage is installed on the
+    merchant tool instance rather than by rebinding the field. Call
+    :func:`restore_read_layer` to bring the tool back.
+
+    Raises:
+        InvestigationToolError: On every merchant-profile call until restored.
+    """
+
+    toolset = build_fake_toolset()
+    simulate_read_layer_outage(toolset)
+    try:
+        yield toolset
+    finally:
+        restore_read_layer(toolset)
+
+
+def restore_read_layer(toolset: FakeInvestigationToolset) -> None:
+    """Undo a simulated read-layer outage on ``toolset``.
+
+    The real deterministic merchant tool is copied onto the failing tool
+    instance, so recovery needs no new object and no service rebuild.
+    """
+
+    toolset.merchant_profile_tool.get_merchant_profile = (
+        FakeMerchantProfileTool().get_merchant_profile
+    )
+
+
+def simulate_read_layer_outage(toolset: FakeInvestigationToolset) -> None:
+    """Make every merchant-profile call on ``toolset`` fail."""
+
+    async def explode(*args: object, **kwargs: object) -> None:
+        raise InvestigationToolError("simulated read-layer outage")
+
+    toolset.merchant_profile_tool.get_merchant_profile = explode  # type: ignore[method-assign]

@@ -12,15 +12,23 @@
 pydantic>=2.7,<3.0
 pydantic-settings>=2.3,<3.0
 
+# --- Workflow orchestration (Member 2, Batch 2) -----------------------------
+# langgraph provides the state graph and the checkpointer. No AI SDK is listed:
+# Batch 2 is deterministic and calls no language model. openai arrives with the
+# batch that actually adds narration/recommendation.
+langgraph>=1.0,<2.0
+
 # --- Testing (all members) --------------------------------------------------
 pytest>=8.0
+# The investigation graph and the service are async; asyncio_mode=auto in
+# pyproject.toml drives them without per-test markers.
+pytest-asyncio>=0.24
 
 # ---------------------------------------------------------------------------
 # Not yet added, on purpose (do not add before the code that needs them):
 #   fastapi, uvicorn   - Member 1's API layer
 #   sqlalchemy, alembic - Member 4's persistence layer
-#   langgraph          - Member 2's workflow, Batch 2
-#   openai             - Member 2's narration, Batch 2
+#   openai             - Member 2's narration, a later batch
 #   boto3              - Member 4's SES/SNS notifications
 #   pyjwt              - authentication
 # ---------------------------------------------------------------------------
