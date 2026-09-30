@@ -1,0 +1,3 @@
+"""
+Schema test suite package.
+"""
