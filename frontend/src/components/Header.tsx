@@ -1,5 +1,7 @@
-import { Bell, Search, User } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Bell, Search, User, LogOut } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { isAnyEndpointConfigured } from '../config/apiEndpoints';
 
 const getPageTitle = (pathname: string) => {
   if (pathname.startsWith('/transactions')) return 'Transactions';
@@ -13,7 +15,14 @@ const getPageTitle = (pathname: string) => {
 
 const Header = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const pageTitle = getPageTitle(location.pathname);
+  const { reviewer, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   return (
     <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shrink-0">
@@ -22,6 +31,9 @@ const Header = () => {
       </div>
       
       <div className="flex items-center space-x-6">
+        <span title={isAnyEndpointConfigured() ? 'Configured backend endpoint available' : 'Using isolated frontend mock data'} className={`hidden rounded-full border px-2.5 py-1 text-xs font-medium md:inline-flex ${isAnyEndpointConfigured() ? 'border-green-200 bg-green-50 text-green-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>
+          {isAnyEndpointConfigured() ? 'Backend Connected' : 'Demo Data'}
+        </span>
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input 
@@ -38,12 +50,19 @@ const Header = () => {
         
         <div className="flex items-center space-x-3 border-l border-gray-200 pl-6">
           <div className="text-right hidden md:block">
-            <p className="text-sm font-medium text-slate-700 leading-none">Alex Reviewer</p>
+            <p className="text-sm font-medium text-slate-700 leading-none">{reviewer?.name || 'Reviewer'}</p>
             <p className="text-xs text-green-600 font-medium mt-1">● Online</p>
           </div>
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
             <User className="w-4 h-4" />
           </div>
+          <button 
+            onClick={handleLogout}
+            className="ml-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
+            title="Sign Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </header>
