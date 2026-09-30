@@ -1,0 +1,8 @@
+# Tool configuration only. Dependencies live in requirements.txt so that the
+# repository has a single dependency-management method.
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q --strict-markers"

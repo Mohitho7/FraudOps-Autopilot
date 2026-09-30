@@ -1,0 +1,26 @@
+# FraudOps backend dependencies.
+#
+# The locked stack is defined in "documention/02_Technology_Stack_and_Tooling.docx".
+# This file currently lists only what the backend code committed in the first
+# foundation batch actually imports. Members append their own lines; do not
+# remove another member's entries.
+#
+# Installed in the local environment with:
+#   python -m pip install -r backend/requirements.txt
+
+# --- Validation (Member 1 + Member 2) ---------------------------------------
+pydantic>=2.7,<3.0
+pydantic-settings>=2.3,<3.0
+
+# --- Testing (all members) --------------------------------------------------
+pytest>=8.0
+
+# ---------------------------------------------------------------------------
+# Not yet added, on purpose (do not add before the code that needs them):
+#   fastapi, uvicorn   - Member 1's API layer
+#   sqlalchemy, alembic - Member 4's persistence layer
+#   langgraph          - Member 2's workflow, Batch 2
+#   openai             - Member 2's narration, Batch 2
+#   boto3              - Member 4's SES/SNS notifications
+#   pyjwt              - authentication
+# ---------------------------------------------------------------------------
