@@ -1,0 +1,7 @@
+id,name,email,country,risk_baseline,created_at
+20bca74e-d574-57b9-9fab-b5e0835ff4d2,Aarav Mehta,aarav@example.test,IN,25000.00,2026-09-01T10:00:00Z
+bd1a385e-5cfc-5a62-84b8-87ca13bcc35b,Maya Sharma,maya@example.test,IN,18000.00,2026-09-01T10:00:00Z
+6c5a1ba0-d8b2-54eb-9e20-c33a92ae6d33,Liam Carter,liam@example.test,US,900.00,2026-09-01T10:00:00Z
+92803394-0792-5aa4-a48f-38f925ddf9f4,Noah Williams,noah@example.test,US,1200.00,2026-09-01T10:00:00Z
+ef420218-52db-5cf6-8db5-7b06b585d2ac,Sophia Patel,sophia@example.test,IN,35000.00,2026-09-01T10:00:00Z
+b2e8c7e9-d6b2-57ab-8670-5528b57f73af,Ethan Brown,ethan@example.test,GB,500.00,2026-09-01T10:00:00Z

@@ -1,0 +1,5 @@
+id,primary_transaction_id,risk_score,severity,status,summary,recommendation,created_at,updated_at
+a35ac5a0-8257-5d97-a313-18490008ec2b,6562ddb7-926e-5888-aacf-77e0001a6aa3,60,HIGH,OPEN,Large fuel-station transaction with strong merchant-context anomaly.,HOLD_FOR_REVIEW,2026-09-30T11:45:00Z,2026-09-30T11:45:00Z
+bfdcaace-5703-571d-8e79-cd6697aa2254,4288b8ae-e86f-5a23-a71e-0456afb507b6,25,HIGH,OPEN,Multiple rapid transactions indicate velocity anomaly.,HOLD_FOR_REVIEW,2026-09-30T11:45:00Z,2026-09-30T11:45:00Z
+a00b2098-c1cb-5dc6-a1d7-ec9cd1865d04,ce337c5c-c8ba-5f25-b3d4-b663683ec1ef,55,HIGH,OPEN,Hyderabad-to-London activity in an implausibly short interval.,ESCALATE,2026-09-30T11:45:00Z,2026-09-30T11:45:00Z
+0374c1d9-244a-5030-a306-d9cbadca53f3,fdc99358-91d8-57a1-9e85-45e19f4a455c,110,CRITICAL,OPEN,"Combined amount, velocity, geography and linked-entity signals.",ESCALATE,2026-09-30T11:45:00Z,2026-09-30T11:45:00Z

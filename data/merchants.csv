@@ -1,0 +1,6 @@
+id,name,category,country,expected_p50,expected_p95,expected_p99,operating_hours,daily_volume_baseline,created_at
+70719c01-db4c-5672-8f33-0d04e53ae0f1,Spice Garden,restaurant,IN,1800.00,6000.00,12000.00,10:00-23:00,900.00,2026-09-01T10:00:00Z
+4dee52bc-bc86-5f3e-8a15-3e4358d9bc06,Royal Gold House,gold_jewelry,IN,80000.00,500000.00,1200000.00,10:00-20:00,80.00,2026-09-01T10:00:00Z
+0df1e219-ecc8-5af0-bab5-be5b0293cd73,QuickFuel,fuel_station,IN,1800.00,6500.00,12000.00,00:00-23:59,1200.00,2026-09-01T10:00:00Z
+8c744e8b-45cf-5e27-8eda-b0d17382eb46,London Market,retail,GB,60.00,300.00,800.00,09:00-21:00,700.00,2026-09-01T10:00:00Z
+ae627b25-b4ef-5f80-ada1-61812cdefc20,TechHub,electronics,US,300.00,1500.00,5000.00,09:00-21:00,500.00,2026-09-01T10:00:00Z

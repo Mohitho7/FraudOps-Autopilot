@@ -1,0 +1,5 @@
+id,case_id,source_type,source_ref,title,details_json,created_at
+028c9b21-d9a9-5128-8ca2-3ca25e10793d,a35ac5a0-8257-5d97-a313-18490008ec2b,rule_result,rule_engine,Deterministic fraud signals,"{""verified"":true}",2026-09-30T11:46:00Z
+c8ade62b-5dd1-54fd-bcce-8f6fced2c90c,bfdcaace-5703-571d-8e79-cd6697aa2254,rule_result,rule_engine,Deterministic fraud signals,"{""verified"":true}",2026-09-30T11:46:00Z
+a1c1d658-b344-5b5c-91c7-e1d7176fd75b,a00b2098-c1cb-5dc6-a1d7-ec9cd1865d04,rule_result,rule_engine,Deterministic fraud signals,"{""verified"":true}",2026-09-30T11:46:00Z
+053cbc6c-5027-503b-b7cb-c22f7a9ea38c,0374c1d9-244a-5030-a306-d9cbadca53f3,rule_result,rule_engine,Deterministic fraud signals,"{""verified"":true}",2026-09-30T11:46:00Z

@@ -1,0 +1,6 @@
+id,code,name,category,enabled,weight,config_json,created_at
+7dc32161-69db-5c54-bd21-3cf77db6c204,unusual_amount,Unusual Transaction Amount,amount,true,35,"{""customer_multiplier"":5,""merchant_percentile"":0.99}",2026-09-01T10:00:00Z
+b1e44ef5-e562-5458-8929-76cfaf9566a9,velocity,Transaction Velocity,velocity,true,25,"{""window_minutes"":10,""max_count"":6}",2026-09-01T10:00:00Z
+0e8925ba-7c65-5804-bee4-d83d022ede5d,impossible_geography,Impossible Geography,geography,true,30,"{""max_speed_kmh"":900}",2026-09-01T10:00:00Z
+59d74b0e-7135-5b68-ad39-d166533ab701,business_mismatch,Business Context Mismatch,business_context,true,25,"{""merchant_percentile"":0.99}",2026-09-01T10:00:00Z
+9d161c40-ce13-55e2-8776-eccd3f0aa44e,relationship_risk,Relationship Risk,relationship,true,20,"{""linked_entity_threshold"":2}",2026-09-01T10:00:00Z

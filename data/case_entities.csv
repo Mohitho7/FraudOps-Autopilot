@@ -1,0 +1,7 @@
+id,case_id,entity_type,entity_ref,relation_type
+f16e579f-a32d-500f-a268-c0010305c58d,a35ac5a0-8257-5d97-a313-18490008ec2b,transaction,6562ddb7-926e-5888-aacf-77e0001a6aa3,primary_transaction
+7bde240e-b935-5468-9d91-a3607f57e49b,bfdcaace-5703-571d-8e79-cd6697aa2254,transaction,4288b8ae-e86f-5a23-a71e-0456afb507b6,primary_transaction
+76ded96a-107f-5ea1-8e82-1930613b231b,a00b2098-c1cb-5dc6-a1d7-ec9cd1865d04,transaction,ce337c5c-c8ba-5f25-b3d4-b663683ec1ef,primary_transaction
+c7bf19af-5f98-5c96-9f44-243802e5ce2d,0374c1d9-244a-5030-a306-d9cbadca53f3,transaction,fdc99358-91d8-57a1-9e85-45e19f4a455c,primary_transaction
+fad02f6c-8262-5d7d-b4ee-49b002b2207b,0374c1d9-244a-5030-a306-d9cbadca53f3,device,dev-a1,linked_device
+b9800bf0-7444-5a59-81de-ec342130570e,0374c1d9-244a-5030-a306-d9cbadca53f3,ip,203.0.113.10,linked_ip

@@ -1,0 +1,18 @@
+id,transaction_id,rule_id,triggered,score,severity,reason,evidence_json,created_at
+5f6ceecc-b255-54ab-8043-e8359c3deb6c,6562ddb7-926e-5888-aacf-77e0001a6aa3,7dc32161-69db-5c54-bd21-3cf77db6c204,true,35,HIGH,Unusual transaction amount,"{""demo"":true}",2026-09-30T11:40:00Z
+c72de75e-6ff0-5e0d-a7a4-b3011d62135e,9aeeef0f-f8b2-5570-8d8c-8a338c221db9,7dc32161-69db-5c54-bd21-3cf77db6c204,true,35,HIGH,Unusual transaction amount,"{""demo"":true}",2026-09-30T11:40:00Z
+17c84dc1-d981-5498-91ca-e1fb4f71e697,ce337c5c-c8ba-5f25-b3d4-b663683ec1ef,7dc32161-69db-5c54-bd21-3cf77db6c204,true,35,HIGH,Unusual transaction amount,"{""demo"":true}",2026-09-30T11:40:00Z
+235ba420-980e-55d6-b57b-307180124d87,31c0fdf5-451c-52b7-90e4-9c8c51d7989d,7dc32161-69db-5c54-bd21-3cf77db6c204,true,35,HIGH,Unusual transaction amount,"{""demo"":true}",2026-09-30T11:40:00Z
+332d4613-8155-5efd-ab1a-7861668d5100,fdc99358-91d8-57a1-9e85-45e19f4a455c,7dc32161-69db-5c54-bd21-3cf77db6c204,true,35,HIGH,Unusual transaction amount,"{""demo"":true}",2026-09-30T11:40:00Z
+988a04ae-1306-5a11-9093-0d1d266419dc,4288b8ae-e86f-5a23-a71e-0456afb507b6,b1e44ef5-e562-5458-8929-76cfaf9566a9,true,25,HIGH,High transaction velocity,"{""window_minutes"":10}",2026-09-30T11:40:00Z
+b59ded63-2bf6-5613-bfed-f864bc6738a8,01edc605-1ff5-5d1a-a85f-09e519edb296,b1e44ef5-e562-5458-8929-76cfaf9566a9,true,25,HIGH,High transaction velocity,"{""window_minutes"":10}",2026-09-30T11:40:00Z
+597986bf-5b7f-5e89-8fc2-fe3b3ef2fce7,2915be44-ee29-52af-92d1-c91bae857201,b1e44ef5-e562-5458-8929-76cfaf9566a9,true,25,HIGH,High transaction velocity,"{""window_minutes"":10}",2026-09-30T11:40:00Z
+6271c0b1-a84a-5916-81b1-78a8abdb8c98,41373913-9af8-562e-8aff-2fe4cff19085,b1e44ef5-e562-5458-8929-76cfaf9566a9,true,25,HIGH,High transaction velocity,"{""window_minutes"":10}",2026-09-30T11:40:00Z
+408ccf3e-56e5-562e-82e1-f44352aa45ab,b0bb737b-98ef-5991-86fc-10b066a3838e,b1e44ef5-e562-5458-8929-76cfaf9566a9,true,25,HIGH,High transaction velocity,"{""window_minutes"":10}",2026-09-30T11:40:00Z
+acf073e4-7bd1-563c-9539-d154f9f4c442,31c0fdf5-451c-52b7-90e4-9c8c51d7989d,b1e44ef5-e562-5458-8929-76cfaf9566a9,true,25,HIGH,High transaction velocity,"{""window_minutes"":10}",2026-09-30T11:40:00Z
+74091047-b6e6-53fb-ba60-db6d0015c5e1,fdc99358-91d8-57a1-9e85-45e19f4a455c,b1e44ef5-e562-5458-8929-76cfaf9566a9,true,25,HIGH,High transaction velocity,"{""window_minutes"":10}",2026-09-30T11:40:00Z
+839a222a-4471-58bc-85b7-56bceea2c1b1,ce337c5c-c8ba-5f25-b3d4-b663683ec1ef,0e8925ba-7c65-5804-bee4-d83d022ede5d,true,30,HIGH,Impossible geography,"{""origin"":""Hyderabad"",""destination"":""London""}",2026-09-30T11:40:00Z
+3514c466-2e66-5da2-b0f6-fcc372bd3e6f,6562ddb7-926e-5888-aacf-77e0001a6aa3,59d74b0e-7135-5b68-ad39-d166533ab701,true,25,HIGH,Business context mismatch,"{""merchant_category"":""fuel_station""}",2026-09-30T11:40:00Z
+2a3163e5-0f93-512d-962c-d61cc68b8c88,31c0fdf5-451c-52b7-90e4-9c8c51d7989d,59d74b0e-7135-5b68-ad39-d166533ab701,true,25,HIGH,Business context mismatch,"{""merchant_category"":""fuel_station""}",2026-09-30T11:40:00Z
+652c145c-898b-58ba-a260-856aa82500db,fdc99358-91d8-57a1-9e85-45e19f4a455c,59d74b0e-7135-5b68-ad39-d166533ab701,true,25,HIGH,Business context mismatch,"{""merchant_category"":""fuel_station""}",2026-09-30T11:40:00Z
+43f4e930-eb3d-5817-98a2-92ca708440df,fdc99358-91d8-57a1-9e85-45e19f4a455c,9d161c40-ce13-55e2-8776-eccd3f0aa44e,true,20,HIGH,Linked device/IP activity,"{""linked"":true}",2026-09-30T11:40:00Z
