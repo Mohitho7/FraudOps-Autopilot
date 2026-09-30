@@ -67,7 +67,7 @@ export const authApi = {
         return null;
       }
     }
-    return null;
+    return MOCK_REVIEWER;
   },
 
   /**

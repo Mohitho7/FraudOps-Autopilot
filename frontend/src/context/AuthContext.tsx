@@ -24,11 +24,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Restore session on mount
   useEffect(() => {
     const savedReviewer = authApi.getCurrentReviewer();
-    const hasToken = authApi.isAuthenticated();
-    if (savedReviewer && hasToken) {
+    if (savedReviewer) {
       setReviewer(savedReviewer);
-      setIsAuthenticated(true);
     }
+    // Demo mode intentionally opens the reviewer console without a login step.
+    setIsAuthenticated(true);
     setIsLoading(false);
   }, []);
 

@@ -14,7 +14,7 @@ All backend endpoint mappings are intentionally empty. Services use the existing
 
 ## Main Pages
 
-- `/login`: mock reviewer authentication and session restoration
+- `/login`: redirects to the dashboard; the current demo opens directly without a login step
 - `/dashboard`: command center metrics and flagged transactions
 - `/transactions`: searchable, filterable transaction queue
 - `/transactions/:id`: transaction facts and investigation context
@@ -35,7 +35,7 @@ All backend endpoint mappings are intentionally empty. Services use the existing
 
 ## Security Boundaries
 
-The frontend does not calculate fraud scores, evaluate fraud rules, run agent reasoning, expose prompts, or display chain-of-thought. `VITE_API_BASE_URL` is the only permitted frontend environment variable. Authentication is currently mock/local-storage based and is not production authentication.
+The frontend does not calculate fraud scores, evaluate fraud rules, run agent reasoning, expose prompts, or display chain-of-thought. `VITE_API_BASE_URL` is the only permitted frontend environment variable. Authentication is bypassed for the demo and remains mock/local-storage based; it is not production authentication.
 
 ## Mock Mode and Backend Integration
 
